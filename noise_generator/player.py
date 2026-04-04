@@ -35,10 +35,13 @@ def play_noise_loop(signal: np.ndarray, sample_rate: int = 44100, volume: float 
 
     audio = (signal * volume).astype(np.float32)
 
+    # Tile the signal 10 times to create a long buffer with no gaps
+    looped = np.tile(audio, 10)
+
     print("Looping... press Ctrl+C to stop.")
     try:
         while not _stop_flag:
-            sd.play(audio, samplerate=sample_rate)
+            sd.play(looped, samplerate=sample_rate)
             sd.wait()
             if _stop_flag:
                 break

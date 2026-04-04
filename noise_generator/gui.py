@@ -219,7 +219,8 @@ class NoiseGeneratorApp(QMainWindow):
 
     def _stop(self):
         from noise_generator.player import stop
-        stop()
+        if self.is_playing:
+            stop()
         self.is_playing = False
         self.play_button.setEnabled(True)
         self.stop_button.setEnabled(False)
