@@ -28,8 +28,14 @@ def generate_brown_noise(duration: float, sample_rate: int = 44100) -> np.ndarra
 
     # Remove DC offset first, then normalize
     brown = brown - np.mean(brown)
-    brown = brown / np.std(brown)
     brown = brown / np.max(np.abs(brown))
+
+    # Fade in and out over 50ms to prevent popping
+    fade_samples = int(sample_rate * 0.05)
+    fade = np.linspace(0, 1, fade_samples)
+    brown[:fade_samples] *= fade
+    brown[-fade_samples:] *= fade[::-1]
+
     return brown
 
 
