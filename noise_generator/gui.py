@@ -4,9 +4,9 @@ import sounddevice as sd
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout,
     QLabel, QComboBox, QSlider, QCheckBox,
-    QPushButton, QFileDialog
+    QPushButton, QFileDialog, QProgressBar
 )
-from PyQt6.QtCore import Qt, pyqtSignal, QObject
+from PyQt6.QtCore import Qt, pyqtSignal, QObject, QTimer
 from PyQt6.QtGui import QFont
 from noise_generator.generators import NOISE_TYPES, normalize
 from noise_generator.player import play_noise, play_noise_loop
@@ -16,6 +16,7 @@ from noise_generator.exporter import EXPORT_FORMATS
 class Signals(QObject):
     status_changed = pyqtSignal(str, str)
     playback_finished = pyqtSignal()
+    timer_start = pyqtSignal(int)
 
 
 class NoiseGeneratorApp(QMainWindow):
@@ -30,6 +31,7 @@ class NoiseGeneratorApp(QMainWindow):
         self.signals = Signals()
         self.signals.status_changed.connect(self._update_status)
         self.signals.playback_finished.connect(self._on_playback_finished)
+        self.signals.timer_start.connect(self._start_timer)
 
         self._build_ui()
         self._apply_styles()
@@ -69,11 +71,20 @@ class NoiseGeneratorApp(QMainWindow):
         )
         layout.addWidget(self.volume_slider)
 
-        # Duration display
+        # Duration display / countdown
         self.duration_display = QLabel("0h 0m 10s")
         self.duration_display.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.duration_display.setFont(QFont("Arial", 18, QFont.Weight.Bold))
         layout.addWidget(self.duration_display)
+
+        # Progress bar
+        self.progress_bar = QProgressBar()
+        self.progress_bar.setRange(0, 100)
+        self.progress_bar.setValue(0)
+        self.progress_bar.setTextVisible(False)
+        self.progress_bar.setFixedHeight(8)
+        self.progress_bar.hide()
+        layout.addWidget(self.progress_bar)
 
         # Hours slider
         self.hours_label = QLabel("Hours: 0")
@@ -207,6 +218,14 @@ class NoiseGeneratorApp(QMainWindow):
             #export_button:hover {
                 background-color: #1b4332;
             }
+            QProgressBar {
+                background-color: #333;
+                border-radius: 4px;
+            }
+            QProgressBar::chunk {
+                background-color: #3a7ebf;
+                border-radius: 4px;
+            }
         """)
         self.export_button.setObjectName("export_button")
 
@@ -219,6 +238,38 @@ class NoiseGeneratorApp(QMainWindow):
         self.seconds_label.setText(f"Seconds: {s}")
         self.duration_display.setText(f"{h}h {m}m {s}s")
     
+    def _start_timer(self, total_seconds):
+        self._timer_total = total_seconds
+        self._timer_remaining = total_seconds
+        self.progress_bar.setValue(100)
+        self.progress_bar.show()
+
+        self._countdown_timer = QTimer()
+        self._countdown_timer.setInterval(1000)
+        self._countdown_timer.timeout.connect(self._tick)
+        self._countdown_timer.start()
+
+    def _tick(self):
+        self._timer_remaining -= 1
+        h = self._timer_remaining // 3600
+        m = (self._timer_remaining % 3600) // 60
+        s = self._timer_remaining % 60
+        self.duration_display.setText(f"{h}h {m}m {s}s")
+
+        progress = int((self._timer_remaining / self._timer_total) * 100)
+        self.progress_bar.setValue(progress)
+
+        if self._timer_remaining <= 0:
+            self._countdown_timer.stop()
+            self.progress_bar.hide()
+            self._restore_duration_display()
+
+    def _restore_duration_display(self):
+        h = self.hours_slider.value()
+        m = self.minutes_slider.value()
+        s = self.seconds_slider.value()
+        self.duration_display.setText(f"{h}h {m}m {s}s")
+
     def _generate(self):
         noise_type = self.noise_dropdown.currentText()
         h = self.hours_slider.value()
@@ -244,7 +295,14 @@ class NoiseGeneratorApp(QMainWindow):
         def run():
             try:
                 signal = self._generate()
+                h = self.hours_slider.value()
+                m = self.minutes_slider.value()
+                s = self.seconds_slider.value()
+                total_seconds = (h * 3600) + (m * 60) + s
+                if total_seconds == 0:
+                    total_seconds = 10
                 self.signals.status_changed.emit("Playing...", "green")
+                self.signals.timer_start.emit(total_seconds)
                 if self.loop_checkbox.isChecked():
                     play_noise_loop(signal, volume=1.0)
                 else:
@@ -261,6 +319,10 @@ class NoiseGeneratorApp(QMainWindow):
         from noise_generator.player import stop
         if self.is_playing:
             stop()
+            if hasattr(self, '_countdown_timer'):
+                self._countdown_timer.stop()
+            self._restore_duration_display()
+            self.progress_bar.hide()
         self.is_playing = False
         self.play_button.setEnabled(True)
         self.stop_button.setEnabled(False)
