@@ -23,7 +23,7 @@ class NoiseGeneratorApp(QMainWindow):
         super().__init__()
 
         self.setWindowTitle("Noise Generator")
-        self.setFixedSize(400, 520)
+        self.setFixedSize(400, 700)
 
         self.is_playing = False
         self.play_thread = None
@@ -69,18 +69,44 @@ class NoiseGeneratorApp(QMainWindow):
         )
         layout.addWidget(self.volume_slider)
 
-        # Duration
-        self.duration_label = QLabel("Duration: 10s")
-        self.duration_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(self.duration_label)
+        # Duration display
+        self.duration_display = QLabel("0h 0m 10s")
+        self.duration_display.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.duration_display.setFont(QFont("Arial", 18, QFont.Weight.Bold))
+        layout.addWidget(self.duration_display)
 
-        self.duration_slider = QSlider(Qt.Orientation.Horizontal)
-        self.duration_slider.setRange(1, 60)
-        self.duration_slider.setValue(10)
-        self.duration_slider.valueChanged.connect(
-            lambda v: self.duration_label.setText(f"Duration: {v}s")
-        )
-        layout.addWidget(self.duration_slider)
+        # Hours slider
+        self.hours_label = QLabel("Hours: 0")
+        self.hours_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(self.hours_label)
+
+        self.hours_slider = QSlider(Qt.Orientation.Horizontal)
+        self.hours_slider.setRange(0, 12)
+        self.hours_slider.setValue(0)
+        self.hours_slider.valueChanged.connect(self._update_duration_display)
+        layout.addWidget(self.hours_slider)
+
+        # Minutes slider
+        self.minutes_label = QLabel("Minutes: 0")
+        self.minutes_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(self.minutes_label)
+
+        self.minutes_slider = QSlider(Qt.Orientation.Horizontal)
+        self.minutes_slider.setRange(0, 59)
+        self.minutes_slider.setValue(0)
+        self.minutes_slider.valueChanged.connect(self._update_duration_display)
+        layout.addWidget(self.minutes_slider)
+
+        # Seconds slider
+        self.seconds_label = QLabel("Seconds: 10")
+        self.seconds_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(self.seconds_label)
+
+        self.seconds_slider = QSlider(Qt.Orientation.Horizontal)
+        self.seconds_slider.setRange(0, 59)
+        self.seconds_slider.setValue(10)
+        self.seconds_slider.valueChanged.connect(self._update_duration_display)
+        layout.addWidget(self.seconds_slider)
 
         # Loop
         self.loop_checkbox = QCheckBox("Loop")
@@ -184,9 +210,23 @@ class NoiseGeneratorApp(QMainWindow):
         """)
         self.export_button.setObjectName("export_button")
 
+    def _update_duration_display(self):
+        h = self.hours_slider.value()
+        m = self.minutes_slider.value()
+        s = self.seconds_slider.value()
+        self.hours_label.setText(f"Hours: {h}")
+        self.minutes_label.setText(f"Minutes: {m}")
+        self.seconds_label.setText(f"Seconds: {s}")
+        self.duration_display.setText(f"{h}h {m}m {s}s")
+    
     def _generate(self):
         noise_type = self.noise_dropdown.currentText()
-        duration = self.duration_slider.value()
+        h = self.hours_slider.value()
+        m = self.minutes_slider.value()
+        s = self.seconds_slider.value()
+        duration = (h * 3600) + (m * 60) + s
+        if duration == 0:
+            duration = 10  # fallback to 10 seconds if all sliders are zero
         volume = self.volume_slider.value() / 100
         generator = NOISE_TYPES[noise_type]
         signal = generator(duration)
