@@ -4,3 +4,4 @@ sounddevice
 soundfile
 rich
 pydub
+PyQt6

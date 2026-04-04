@@ -1,30 +1,49 @@
 import numpy as np
 import sounddevice as sd
 
+# Global stop flag
+_stop_flag = False
+
+
+def stop():
+    """Signal all playback to stop."""
+    global _stop_flag
+    _stop_flag = True
+    sd.stop()
+
 
 def play_noise(signal: np.ndarray, sample_rate: int = 44100, volume: float = 0.8) -> None:
     """Play a noise signal through the speakers in real time."""
-    # Scale by volume and ensure float32 format for sounddevice
+    global _stop_flag
+    _stop_flag = False
+
     audio = (signal * volume).astype(np.float32)
 
     print("Playing... press Ctrl+C to stop.")
     try:
         sd.play(audio, samplerate=sample_rate)
-        sd.wait()  # Wait until playback is finished
+        sd.wait()
     except KeyboardInterrupt:
         sd.stop()
         print("\nPlayback stopped.")
 
 
 def play_noise_loop(signal: np.ndarray, sample_rate: int = 44100, volume: float = 0.8) -> None:
-    """Play a noise signal on a continuous loop until Ctrl+C is pressed."""
+    """Play a noise signal on a continuous loop until stopped."""
+    global _stop_flag
+    _stop_flag = False
+
     audio = (signal * volume).astype(np.float32)
 
     print("Looping... press Ctrl+C to stop.")
     try:
-        while True:
+        while not _stop_flag:
             sd.play(audio, samplerate=sample_rate)
             sd.wait()
+            if _stop_flag:
+                break
     except KeyboardInterrupt:
+        pass
+    finally:
         sd.stop()
         print("\nPlayback stopped.")
