@@ -26,7 +26,9 @@ def generate_brown_noise(duration: float, sample_rate: int = 44100) -> np.ndarra
     white = np.random.randn(samples)
     brown = np.cumsum(white)
 
-    # Normalize to prevent clipping
+    # Remove DC offset first, then normalize
+    brown = brown - np.mean(brown)
+    brown = brown / np.std(brown)
     brown = brown / np.max(np.abs(brown))
     return brown
 
