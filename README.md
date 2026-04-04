@@ -34,5 +34,18 @@ python -m noise_generator.cli --type brown --duration 60 --export my_noise.wav
 - blue — gentle high frequency emphasis (+3 dB per octave)
 - violet — steep high frequency emphasis (+6 dB per octave)
 
+## MP3 Export
+
+MP3 export requires two additional dependencies:
+```bash
+pip install pydub
+brew install ffmpeg
+```
+
+Then export as MP3:
+```bash
+python -m noise_generator.cli --type pink --duration 60 --export my_noise.mp3 --format mp3
+```
+
 ## Notes
 - As of right now, brown noise is much quieter than the others. Some normalization has been tried but not perfected, for now expect a quieter signal from brown noise.
