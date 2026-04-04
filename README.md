@@ -29,7 +29,10 @@ python -m noise_generator.cli --type brown --duration 60 --export my_noise.wav
 
 ## Noise Types
 - white — equal energy at all frequencies
-- pink — 1/f spectrum, warm and natural
-- brown — deep and rumbly
-- blue — bright, high frequency emphasis
-- violet — very bright, steepest high frequency emphasis
+- pink — gentle low frequency emphasis (-3dB per octave)
+- brown — steep low frequency emphasis (-6dB per octave)
+- blue — gentle high frequency emphasis (+3 dB per octave)
+- violet — steep high frequency emphasis (+6 dB per octave)
+
+## Notes
+- As of right now, brown noise is much quieter than the others. Some normalization has been tried but not perfected, for now expect a quieter signal from brown noise.
