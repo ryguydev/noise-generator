@@ -1,0 +1,12 @@
+# Audio exports
+*.wav
+*.mp3
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Mac
+.DS_Store
