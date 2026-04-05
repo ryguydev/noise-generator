@@ -3,7 +3,7 @@ import sys
 import threading
 import sounddevice as sd
 from PyQt6.QtWidgets import (
-    QApplication, QMainWindow, QWidget, QVBoxLayout,
+    QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QLabel, QComboBox, QSlider, QCheckBox,
     QPushButton, QFileDialog, QProgressBar
 )
@@ -27,7 +27,7 @@ class NoiseGeneratorApp(QMainWindow):
         self.setWindowTitle("Noise Generator")
         icon_path = os.path.join(os.path.dirname(__file__), '..', 'assets', 'logo.png')
         self.setWindowIcon(QIcon(icon_path))
-        self.setFixedSize(400, 700)
+        self.setFixedSize(400, 720)
 
         self.is_playing = False
         self.play_thread = None
@@ -43,116 +43,189 @@ class NoiseGeneratorApp(QMainWindow):
         central = QWidget()
         self.setCentralWidget(central)
         layout = QVBoxLayout(central)
-        layout.setContentsMargins(40, 30, 40, 30)
+        layout.setContentsMargins(24, 24, 24, 24)
         layout.setSpacing(12)
 
         # Title
         title = QLabel("Noise Generator")
         title.setFont(QFont("Arial", 22, QFont.Weight.Bold))
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        title.setStyleSheet("color: #e8f0fe; font-size: 22px; font-weight: bold;")
         layout.addWidget(title)
 
-        # Noise type
-        noise_label = QLabel("Noise Type")
-        noise_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(noise_label)
+        subtitle = QLabel("sleep · focus · relax")
+        subtitle.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        subtitle.setStyleSheet("color: #4a7fa5; font-size: 12px; margin-bottom: 8px;")
+        layout.addWidget(subtitle)
+
+        # Noise type card
+        noise_card = QWidget()
+        noise_card.setStyleSheet("background-color: #122236; border-radius: 10px;")
+        noise_layout = QVBoxLayout(noise_card)
+        noise_layout.setContentsMargins(18, 14, 18, 14)
+        noise_layout.setSpacing(8)
+
+        noise_section_label = QLabel("NOISE TYPE")
+        noise_section_label.setStyleSheet("color: #4a7fa5; font-size: 11px; letter-spacing: 1px;")
+        noise_layout.addWidget(noise_section_label)
 
         self.noise_dropdown = QComboBox()
-        self.noise_dropdown.addItems(list(NOISE_TYPES.keys()))
-        layout.addWidget(self.noise_dropdown)
+        self.noise_dropdown.addItems([k.capitalize() for k in NOISE_TYPES.keys()])
+        noise_layout.addWidget(self.noise_dropdown)
+        layout.addWidget(noise_card)
 
-        # Volume
-        self.volume_label = QLabel("Volume: 80%")
-        self.volume_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(self.volume_label)
+        # Volume card
+        volume_card = QWidget()
+        volume_card.setStyleSheet("background-color: #122236; border-radius: 10px;")
+        volume_layout = QVBoxLayout(volume_card)
+        volume_layout.setContentsMargins(18, 14, 18, 14)
+        volume_layout.setSpacing(8)
+
+        volume_header = QWidget()
+        volume_header_layout = QHBoxLayout(volume_header)
+        volume_header_layout.setContentsMargins(0, 0, 0, 0)
+
+        volume_section_label = QLabel("VOLUME")
+        volume_section_label.setStyleSheet("color: #4a7fa5; font-size: 11px; letter-spacing: 1px;")
+        volume_header_layout.addWidget(volume_section_label)
+
+        self.volume_label = QLabel("80%")
+        self.volume_label.setStyleSheet("color: #b8d4f0; font-size: 13px;")
+        self.volume_label.setAlignment(Qt.AlignmentFlag.AlignRight)
+        volume_header_layout.addWidget(self.volume_label)
+        volume_layout.addWidget(volume_header)
 
         self.volume_slider = QSlider(Qt.Orientation.Horizontal)
         self.volume_slider.setRange(0, 100)
         self.volume_slider.setValue(80)
         self.volume_slider.valueChanged.connect(
-            lambda v: self.volume_label.setText(f"Volume: {v}%")
+            lambda v: self.volume_label.setText(f"{v}%")
         )
-        layout.addWidget(self.volume_slider)
+        volume_layout.addWidget(self.volume_slider)
+        layout.addWidget(volume_card)
 
-        # Duration display / countdown
+        # Duration card
+        duration_card = QWidget()
+        duration_card.setStyleSheet("background-color: #122236; border-radius: 10px;")
+        duration_layout = QVBoxLayout(duration_card)
+        duration_layout.setContentsMargins(18, 14, 18, 14)
+        duration_layout.setSpacing(8)
+
+        duration_section_label = QLabel("DURATION")
+        duration_section_label.setStyleSheet("color: #4a7fa5; font-size: 11px; letter-spacing: 1px;")
+        duration_layout.addWidget(duration_section_label)
+
         self.duration_display = QLabel("0h 0m 10s")
         self.duration_display.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.duration_display.setFont(QFont("Arial", 18, QFont.Weight.Bold))
-        layout.addWidget(self.duration_display)
+        self.duration_display.setFont(QFont("Arial", 24, QFont.Weight.Bold))
+        self.duration_display.setStyleSheet("color: #e8f0fe; font-size: 24px; margin: 4px 0;")
+        duration_layout.addWidget(self.duration_display)
 
-        # Progress bar
+        # Progress bar inside duration card
         self.progress_bar = QProgressBar()
         self.progress_bar.setRange(0, 100)
         self.progress_bar.setValue(0)
         self.progress_bar.setTextVisible(False)
-        self.progress_bar.setFixedHeight(8)
+        self.progress_bar.setFixedHeight(4)
         self.progress_bar.hide()
-        layout.addWidget(self.progress_bar)
+        duration_layout.addWidget(self.progress_bar)
 
         # Hours slider
-        self.hours_label = QLabel("Hours: 0")
-        self.hours_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(self.hours_label)
+        hours_header = QWidget()
+        hours_header_layout = QHBoxLayout(hours_header)
+        hours_header_layout.setContentsMargins(0, 0, 0, 0)
+        hours_section_label = QLabel("Hours")
+        hours_section_label.setStyleSheet("color: #4a7fa5; font-size: 12px;")
+        hours_header_layout.addWidget(hours_section_label)
+        self.hours_label = QLabel("0")
+        self.hours_label.setStyleSheet("color: #b8d4f0; font-size: 12px;")
+        self.hours_label.setAlignment(Qt.AlignmentFlag.AlignRight)
+        hours_header_layout.addWidget(self.hours_label)
+        duration_layout.addWidget(hours_header)
 
         self.hours_slider = QSlider(Qt.Orientation.Horizontal)
         self.hours_slider.setRange(0, 12)
         self.hours_slider.setValue(0)
         self.hours_slider.valueChanged.connect(self._update_duration_display)
-        layout.addWidget(self.hours_slider)
+        duration_layout.addWidget(self.hours_slider)
 
         # Minutes slider
-        self.minutes_label = QLabel("Minutes: 0")
-        self.minutes_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(self.minutes_label)
+        minutes_header = QWidget()
+        minutes_header_layout = QHBoxLayout(minutes_header)
+        minutes_header_layout.setContentsMargins(0, 0, 0, 0)
+        minutes_section_label = QLabel("Minutes")
+        minutes_section_label.setStyleSheet("color: #4a7fa5; font-size: 12px;")
+        minutes_header_layout.addWidget(minutes_section_label)
+        self.minutes_label = QLabel("0")
+        self.minutes_label.setStyleSheet("color: #b8d4f0; font-size: 12px;")
+        self.minutes_label.setAlignment(Qt.AlignmentFlag.AlignRight)
+        minutes_header_layout.addWidget(self.minutes_label)
+        duration_layout.addWidget(minutes_header)
 
         self.minutes_slider = QSlider(Qt.Orientation.Horizontal)
         self.minutes_slider.setRange(0, 59)
         self.minutes_slider.setValue(0)
         self.minutes_slider.valueChanged.connect(self._update_duration_display)
-        layout.addWidget(self.minutes_slider)
+        duration_layout.addWidget(self.minutes_slider)
 
         # Seconds slider
-        self.seconds_label = QLabel("Seconds: 10")
-        self.seconds_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(self.seconds_label)
+        seconds_header = QWidget()
+        seconds_header_layout = QHBoxLayout(seconds_header)
+        seconds_header_layout.setContentsMargins(0, 0, 0, 0)
+        seconds_section_label = QLabel("Seconds")
+        seconds_section_label.setStyleSheet("color: #4a7fa5; font-size: 12px;")
+        seconds_header_layout.addWidget(seconds_section_label)
+        self.seconds_label = QLabel("10")
+        self.seconds_label.setStyleSheet("color: #b8d4f0; font-size: 12px;")
+        self.seconds_label.setAlignment(Qt.AlignmentFlag.AlignRight)
+        seconds_header_layout.addWidget(self.seconds_label)
+        duration_layout.addWidget(seconds_header)
 
         self.seconds_slider = QSlider(Qt.Orientation.Horizontal)
         self.seconds_slider.setRange(0, 59)
         self.seconds_slider.setValue(10)
         self.seconds_slider.valueChanged.connect(self._update_duration_display)
-        layout.addWidget(self.seconds_slider)
+        duration_layout.addWidget(self.seconds_slider)
 
-        # Loop
+        layout.addWidget(duration_card)
+
+        # Loop checkbox
         self.loop_checkbox = QCheckBox("Loop")
-        self.loop_checkbox.setStyleSheet("margin-left: 130px;")
+        self.loop_checkbox.setStyleSheet("color: #4a7fa5; font-size: 13px; margin-left: 4px;")
         layout.addWidget(self.loop_checkbox)
 
-        # Play button
-        self.play_button = QPushButton("Play")
-        self.play_button.setFixedHeight(44)
-        self.play_button.setFont(QFont("Arial", 14, QFont.Weight.Bold))
-        self.play_button.clicked.connect(self._play)
-        layout.addWidget(self.play_button)
+        # Play and Stop buttons side by side
+        button_row = QWidget()
+        button_layout = QHBoxLayout(button_row)
+        button_layout.setContentsMargins(0, 0, 0, 0)
+        button_layout.setSpacing(10)
 
-        # Stop button
+        self.play_button = QPushButton("Play")
+        self.play_button.setFixedHeight(46)
+        self.play_button.setFont(QFont("Arial", 15, QFont.Weight.Bold))
+        self.play_button.clicked.connect(self._play)
+        button_layout.addWidget(self.play_button)
+
         self.stop_button = QPushButton("Stop")
-        self.stop_button.setFixedHeight(44)
-        self.stop_button.setFont(QFont("Arial", 14))
+        self.stop_button.setFixedHeight(46)
+        self.stop_button.setFont(QFont("Arial", 15))
         self.stop_button.clicked.connect(self._stop)
         self.stop_button.setEnabled(False)
-        layout.addWidget(self.stop_button)
+        button_layout.addWidget(self.stop_button)
+
+        layout.addWidget(button_row)
 
         # Export button
         self.export_button = QPushButton("Export WAV")
-        self.export_button.setFixedHeight(44)
-        self.export_button.setFont(QFont("Arial", 14))
+        self.export_button.setFixedHeight(42)
+        self.export_button.setFont(QFont("Arial", 13))
         self.export_button.clicked.connect(self._export)
         layout.addWidget(self.export_button)
 
-        # Status
+        # Status label
         self.status_label = QLabel("Ready")
         self.status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.status_label.setStyleSheet("color: gray;")
+        self.status_label.setStyleSheet("color: #2d5a7a; font-size: 12px;")
         layout.addWidget(self.status_label)
 
     def _apply_styles(self):
