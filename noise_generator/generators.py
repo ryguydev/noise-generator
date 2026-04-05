@@ -36,6 +36,9 @@ def generate_brown_noise(duration: float, sample_rate: int = 44100) -> np.ndarra
     brown[:fade_samples] *= fade
     brown[-fade_samples:] *= fade[::-1]
 
+    # Boost brown noise to match perceived loudness of other noise types
+    brown = brown * 3.0
+
     return brown
 
 
@@ -61,11 +64,17 @@ def generate_violet_noise(duration: float, sample_rate: int = 44100) -> np.ndarr
 
 
 def normalize(signal: np.ndarray, volume: float = 0.8) -> np.ndarray:
-    """Normalize a signal to a target volume level (0.0 to 1.0)."""
-    max_val = np.max(np.abs(signal))
-    if max_val == 0:
+    """Normalize a signal using RMS for perceptually consistent loudness."""
+    # RMS normalization for consistent perceived volume across noise types
+    rms = np.sqrt(np.mean(signal ** 2))
+    if rms == 0:
         return signal
-    return (signal / max_val) * volume
+    normalized = signal / rms
+    # Clip to safe range to prevent distortion
+    normalized = np.clip(normalized, -3.0, 3.0)
+    # Scale to target volume
+    normalized = normalized / np.max(np.abs(normalized)) * volume
+    return normalized
 
 
 NOISE_TYPES = {
