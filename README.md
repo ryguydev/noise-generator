@@ -47,5 +47,23 @@ Then export as MP3:
 python -m noise_generator.cli --type pink --duration 60 --export my_noise.mp3 --format mp3
 ```
 
-## Notes
-- As of right now, brown noise is much quieter than the others. Some normalization has been tried but not perfected, for now expect a quieter signal from brown noise.
+## GUI
+
+Launch the graphical interface:
+```bash
+python -m noise_generator.gui
+```
+
+### GUI Requirements
+PyQt6 is required for the GUI:
+```bash
+pip install PyQt6
+```
+
+### GUI Features
+- Select noise type from dropdown
+- Adjust volume with slider
+- Set duration up to 12 hours with hours/minutes/seconds sliders
+- Loop mode for continuous playback
+- Countdown timer with progress bar
+- Export to WAV
