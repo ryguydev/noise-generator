@@ -17,6 +17,7 @@ def play_noise(signal: np.ndarray, sample_rate: int = 44100, volume: float = 0.8
     global _stop_flag
     _stop_flag = False
 
+    signal = apply_fade_out(signal)
     audio = (signal * volume).astype(np.float32)
 
     print("Playing... press Ctrl+C to stop.")
@@ -50,3 +51,13 @@ def play_noise_loop(signal: np.ndarray, sample_rate: int = 44100, volume: float 
     finally:
         sd.stop()
         print("\nPlayback stopped.")
+
+def apply_fade_out(signal: np.ndarray, fade_seconds: float = 1.0, sample_rate: int = 44100) -> np.ndarray:
+    """Apply an exponential fade out to the end of a signal."""
+    fade_samples = int(fade_seconds * sample_rate)
+    # Exponential curve from 1.0 to 0.0
+    fade = np.logspace(0, -3, fade_samples)
+    fade = fade / fade[0]  # normalize so it starts exactly at 1.0
+    signal = signal.copy()
+    signal[-fade_samples:] *= fade
+    return signal

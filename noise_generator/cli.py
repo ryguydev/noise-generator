@@ -56,6 +56,13 @@ def main():
         help="Sample rate in Hz (default: 44100)"
     )
 
+    parser.add_argument(
+        "--fade-out",
+        type=float,
+        default=1.0,
+        help="Fade out duration in seconds (default: 1.0, set to 0 to disable)"
+    )
+
     args = parser.parse_args()
 
     # Generate the noise
@@ -63,6 +70,11 @@ def main():
     generator = NOISE_TYPES[args.type]
     signal = generator(args.duration, args.sample_rate)
     signal = normalize(signal, args.volume)
+
+    #Apply fadeout
+    if args.fade_out > 0:
+        from noise_generator.player import apply_fade_out
+        signal = apply_fade_out(signal, args.fade_out)
 
     # Either export or play
     if args.export:
