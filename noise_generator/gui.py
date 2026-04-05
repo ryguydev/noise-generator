@@ -1,3 +1,4 @@
+import os
 import sys
 import threading
 import sounddevice as sd
@@ -7,7 +8,7 @@ from PyQt6.QtWidgets import (
     QPushButton, QFileDialog, QProgressBar
 )
 from PyQt6.QtCore import Qt, pyqtSignal, QObject, QTimer
-from PyQt6.QtGui import QFont
+from PyQt6.QtGui import QFont, QIcon
 from noise_generator.generators import NOISE_TYPES, normalize
 from noise_generator.player import play_noise, play_noise_loop
 from noise_generator.exporter import EXPORT_FORMATS
@@ -24,6 +25,8 @@ class NoiseGeneratorApp(QMainWindow):
         super().__init__()
 
         self.setWindowTitle("Noise Generator")
+        icon_path = os.path.join(os.path.dirname(__file__), '..', 'assets', 'logo.png')
+        self.setWindowIcon(QIcon(icon_path))
         self.setFixedSize(400, 700)
 
         self.is_playing = False
@@ -155,79 +158,102 @@ class NoiseGeneratorApp(QMainWindow):
     def _apply_styles(self):
         self.setStyleSheet("""
             QMainWindow, QWidget {
-                background-color: #1e1e1e;
-                color: #ffffff;
+                background-color: #0d1b2a;
+                color: #e8f0fe;
             }
             QLabel {
-                color: #ffffff;
+                color: #e8f0fe;
                 font-size: 13px;
             }
             QComboBox {
-                background-color: #2d2d2d;
-                color: #ffffff;
-                border: 1px solid #555;
-                border-radius: 6px;
-                padding: 6px;
-                font-size: 13px;
+                background-color: #0d1b2a;
+                color: #b8d4f0;
+                border: 1px solid #1e3a5f;
+                border-radius: 8px;
+                padding: 8px 14px;
+                font-size: 14px;
             }
             QComboBox::drop-down {
                 border: none;
             }
             QComboBox QAbstractItemView {
-                background-color: #2d2d2d;
-                color: #ffffff;
-                selection-background-color: #3a7ebf;
+                background-color: #122236;
+                color: #b8d4f0;
+                selection-background-color: #2d7dd2;
+                border: 1px solid #1e3a5f;
             }
             QSlider::groove:horizontal {
-                height: 6px;
-                background: #444;
-                border-radius: 3px;
+                height: 4px;
+                background: #1e3a5f;
+                border-radius: 2px;
             }
             QSlider::handle:horizontal {
-                background: #3a7ebf;
+                background: #2d7dd2;
                 width: 16px;
                 height: 16px;
-                margin: -5px 0;
+                margin: -6px 0;
                 border-radius: 8px;
             }
             QSlider::sub-page:horizontal {
-                background: #3a7ebf;
-                border-radius: 3px;
+                background: #2d7dd2;
+                border-radius: 2px;
             }
             QCheckBox {
-                color: #ffffff;
+                color: #4a7fa5;
                 font-size: 13px;
             }
             QPushButton {
-                background-color: #3a7ebf;
-                color: #ffffff;
-                border: none;
-                border-radius: 8px;
+                background-color: #122236;
+                color: #4a7fa5;
+                border: 1px solid #1e3a5f;
+                border-radius: 10px;
                 font-size: 14px;
+                padding: 12px;
             }
             QPushButton:hover {
-                background-color: #2d6da8;
+                background-color: #1e3a5f;
+                color: #b8d4f0;
             }
             QPushButton:disabled {
-                background-color: #444;
-                color: #888;
-            }
-            #export_button {
-                background-color: #2d6a4f;
-            }
-            #export_button:hover {
-                background-color: #1b4332;
+                background-color: #0d1b2a;
+                color: #1e3a5f;
+                border: 1px solid #122236;
             }
             QProgressBar {
-                background-color: #333;
-                border-radius: 4px;
+                background-color: #1e3a5f;
+                border-radius: 2px;
+                border: none;
             }
             QProgressBar::chunk {
-                background-color: #3a7ebf;
-                border-radius: 4px;
+                background-color: #2d7dd2;
+                border-radius: 2px;
+            }
+            #play_button {
+                background-color: #2d7dd2;
+                color: #e8f0fe;
+                border: none;
+                font-size: 15px;
+                font-weight: bold;
+            }
+            #play_button:hover {
+                background-color: #2270c0;
+            }
+            #play_button:disabled {
+                background-color: #1e3a5f;
+                color: #4a7fa5;
+            }
+            #export_button {
+                background-color: #122236;
+                color: #4a7fa5;
+                border: 1px solid #1e3a5f;
+            }
+            #export_button:hover {
+                background-color: #1e3a5f;
+                color: #b8d4f0;
             }
         """)
         self.export_button.setObjectName("export_button")
+        self.play_button.setObjectName("play_button")
 
     def _update_duration_display(self):
         h = self.hours_slider.value()
