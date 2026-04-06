@@ -370,7 +370,7 @@ class NoiseGeneratorApp(QMainWindow):
         self.duration_display.setText(f"{h}h {m}m {s}s")
 
     def _generate(self):
-        noise_type = self.noise_dropdown.currentText()
+        noise_type = self.noise_dropdown.currentText().lower()
         h = self.hours_slider.value()
         m = self.minutes_slider.value()
         s = self.seconds_slider.value()
