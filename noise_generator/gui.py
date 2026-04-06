@@ -127,7 +127,6 @@ class NoiseGeneratorApp(QMainWindow):
         self.progress_bar.setValue(0)
         self.progress_bar.setTextVisible(False)
         self.progress_bar.setFixedHeight(4)
-        self.progress_bar.hide()
         duration_layout.addWidget(self.progress_bar)
 
         # Hours slider
@@ -195,25 +194,11 @@ class NoiseGeneratorApp(QMainWindow):
         layout.addWidget(self.loop_checkbox)
 
         # Play and Stop buttons side by side
-        button_row = QWidget()
-        button_layout = QHBoxLayout(button_row)
-        button_layout.setContentsMargins(0, 0, 0, 0)
-        button_layout.setSpacing(10)
-
         self.play_button = QPushButton("Play")
         self.play_button.setFixedHeight(46)
         self.play_button.setFont(QFont("Arial", 15, QFont.Weight.Bold))
-        self.play_button.clicked.connect(self._play)
-        button_layout.addWidget(self.play_button)
-
-        self.stop_button = QPushButton("Stop")
-        self.stop_button.setFixedHeight(46)
-        self.stop_button.setFont(QFont("Arial", 15))
-        self.stop_button.clicked.connect(self._stop)
-        self.stop_button.setEnabled(False)
-        button_layout.addWidget(self.stop_button)
-
-        layout.addWidget(button_row)
+        self.play_button.clicked.connect(self._toggle_playback)
+        layout.addWidget(self.play_button)
 
         # Export button
         self.export_button = QPushButton("Export WAV")
@@ -324,6 +309,17 @@ class NoiseGeneratorApp(QMainWindow):
                 background-color: #1e3a5f;
                 color: #b8d4f0;
             }
+                           
+            #stop_button {
+                background-color: #1e4a7a;
+                color: #e8d0d8;
+                border: none;
+                font-size: 15px;
+                font-weight: bold;
+            }
+            #stop_button:hover {
+                background-color: #265a8f;
+            }
         """)
         self.export_button.setObjectName("export_button")
         self.play_button.setObjectName("play_button")
@@ -360,7 +356,7 @@ class NoiseGeneratorApp(QMainWindow):
 
         if self._timer_remaining <= 0:
             self._countdown_timer.stop()
-            self.progress_bar.hide()
+            self.progress_bar.setValue(0)
             self._restore_duration_display()
 
     def _restore_duration_display(self):
@@ -387,8 +383,9 @@ class NoiseGeneratorApp(QMainWindow):
             return
 
         self.is_playing = True
-        self.play_button.setEnabled(False)
-        self.stop_button.setEnabled(True)
+        self.play_button.setText("Stop")
+        self.play_button.setObjectName("stop_button")
+        self.play_button.setStyle(self.play_button.style())
         self.signals.status_changed.emit("Generating...", "orange")
 
         def run():
@@ -421,10 +418,11 @@ class NoiseGeneratorApp(QMainWindow):
             if hasattr(self, '_countdown_timer'):
                 self._countdown_timer.stop()
             self._restore_duration_display()
-            self.progress_bar.hide()
+            self.progress_bar.setValue(0)
         self.is_playing = False
-        self.play_button.setEnabled(True)
-        self.stop_button.setEnabled(False)
+        self.play_button.setText("Play")
+        self.play_button.setObjectName("play_button")
+        self.play_button.setStyle(self.play_button.style())
         self.status_label.setText("Stopped")
         self.status_label.setStyleSheet("color: gray;")
 
@@ -432,10 +430,17 @@ class NoiseGeneratorApp(QMainWindow):
         self.status_label.setText(text)
         self.status_label.setStyleSheet(f"color: {color};")
 
+    def _toggle_playback(self):
+        if self.is_playing:
+            self._stop()
+        else:
+            self._play()
+    
     def _on_playback_finished(self):
         self.is_playing = False
-        self.play_button.setEnabled(True)
-        self.stop_button.setEnabled(False)
+        self.play_button.setText("Play")
+        self.play_button.setObjectName("play_button")
+        self.play_button.setStyle(self.play_button.style())
         self.status_label.setText("Ready")
         self.status_label.setStyleSheet("color: gray;")
     
