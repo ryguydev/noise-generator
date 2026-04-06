@@ -2,7 +2,7 @@
 
 A software-based noise generator built in Python. Supports white, pink, brown, blue, and violet noise with real-time playback and file export.
 
-![Noise Generator GUI](images/AppScreenshot.png)
+<img src="images/screenshot.png" width="400"/>
 
 ## Requirements
 
