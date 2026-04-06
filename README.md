@@ -2,39 +2,55 @@
 
 A software-based noise generator built in Python. Supports white, pink, brown, blue, and violet noise with real-time playback and file export.
 
-## Setup
+## Requirements
+
+- Python 3.9+
+- Homebrew (Mac)
+
+## Installation
+
+Clone the repository:
+```bash
+git clone git@github.com:ryguydev/noise-generator.git
+cd noise-generator
+```
+
+Create and activate a virtual environment:
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
+```
+
+Install dependencies:
+```bash
 pip install -r requirements.txt
 brew install portaudio
 ```
 
 ## Usage
 
-Play white noise for 10 seconds:
+Launch the GUI:
 ```bash
-python -m noise_generator.cli --type white
+python -m noise_generator.gui
 ```
 
-Loop pink noise until Ctrl+C:
+Launch from the CLI:
 ```bash
-python -m noise_generator.cli --type pink --loop
+python -m noise_generator.cli --type pink --duration 30
 ```
 
-Export brown noise to a WAV file:
+Loop noise until Ctrl+C:
 ```bash
-python -m noise_generator.cli --type brown --duration 60 --export my_noise.wav
+python -m noise_generator.cli --type brown --loop
 ```
 
-## Noise Types
-- white — equal energy at all frequencies
-- pink — gentle low frequency emphasis (-3dB per octave)
-- brown — steep low frequency emphasis (-6dB per octave)
-- blue — gentle high frequency emphasis (+3 dB per octave)
-- violet — steep high frequency emphasis (+6 dB per octave)
+Export to WAV:
+```bash
+python -m noise_generator.cli --type white --duration 60 --export my_noise.wav
+```
 
 ## MP3 Export
+MP3 export currently command line only
 
 MP3 export requires two additional dependencies:
 ```bash
@@ -47,23 +63,9 @@ Then export as MP3:
 python -m noise_generator.cli --type pink --duration 60 --export my_noise.mp3 --format mp3
 ```
 
-## GUI
-
-Launch the graphical interface:
-```bash
-python -m noise_generator.gui
-```
-
-### GUI Requirements
-PyQt6 is required for the GUI:
-```bash
-pip install PyQt6
-```
-
-### GUI Features
-- Select noise type from dropdown
-- Adjust volume with slider
-- Set duration up to 12 hours with hours/minutes/seconds sliders
-- Loop mode for continuous playback
-- Countdown timer with progress bar
-- Export to WAV
+## Noise Types
+- white — equal energy at all frequencies
+- pink — gentle low frequency emphasis (-3dB per octave)
+- brown — steep low frequency emphasis (-6dB per octave)
+- blue — gentle high frequency emphasis (+3 dB per octave)
+- violet — steep high frequency emphasis (+6 dB per octave)
