@@ -66,8 +66,8 @@ python -m noise_generator.cli --type pink --duration 60 --export my_noise.mp3 --
 ```
 
 ## Noise Types
-- white — equal energy at all frequencies
-- pink — gentle low frequency emphasis (-3dB per octave)
-- brown — steep low frequency emphasis (-6dB per octave)
-- blue — gentle high frequency emphasis (+3 dB per octave)
-- violet — steep high frequency emphasis (+6 dB per octave)
+- White — equal energy at all frequencies
+- Pink — gentle low frequency emphasis (-3dB per octave)
+- Brown — steep low frequency emphasis (-6dB per octave)
+- Blue — gentle high frequency emphasis (+3 dB per octave)
+- Violet — steep high frequency emphasis (+6 dB per octave)
